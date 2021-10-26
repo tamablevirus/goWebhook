@@ -3,6 +3,7 @@ package goWebhook
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -68,13 +69,13 @@ func (wh Webhook) AddField(title string, value string, inline bool) {
 }
 
 // final function encodes webhook data and then posts to webhook provided via function args
-func (wh Webhook) SendWebhook(url string) *http.Response {
+func (wh Webhook) SendWebhook(url string) (*http.Response, error) {
 	client := &http.Client{}
 
 	webhookData, err := json.Marshal(wh)
 
 	if err != nil {
-		panic("Eror encoding webhook data")
+		return nil, errors.New("error sending webhookd ata")
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(webhookData))
@@ -82,18 +83,18 @@ func (wh Webhook) SendWebhook(url string) *http.Response {
 	req.Header.Add("Content-Type", "application/json")
 
 	if err != nil {
-		panic("Error creating webhook request")
+		return nil, errors.New("error creating request")
 	}
 
 	webhookPost, err := client.Do(req)
 
 	if err != nil {
-		panic("Error posting webhook")
+		return nil, errors.New("error posting webhook")
 	}
 
 	if webhookPost.StatusCode == 204 {
-		return webhookPost
+		return webhookPost, nil
 	} else {
-		return webhookPost
+		return webhookPost, nil
 	}
 }
