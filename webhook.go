@@ -69,7 +69,36 @@ func (wh Webhook) AddField(title string, value string, inline bool) {
 }
 
 // final function encodes webhook data and then posts to webhook provided via function args
-func (wh Webhook) SendWebhook(url string, key string) (*http.Response, error) {
+func (wh Webhook) SendWebhook(url string) (*http.Response, error) {
+	client := &http.Client{}
+
+	webhookData, err := json.Marshal(wh)
+
+	if err != nil {
+		return nil, errors.New("error sending webhookd ata")
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(webhookData))
+
+	req.Header.Add("Content-Type", "application/json")
+
+	if err != nil {
+		return nil, errors.New("error creating request")
+	}
+
+	webhookPost, err := client.Do(req)
+
+	if err != nil {
+		return nil, errors.New("error posting webhook")
+	}
+
+	if webhookPost.StatusCode == 204 {
+		return webhookPost, nil
+	} else {
+		return webhookPost, nil
+	}
+}
+func (wh Webhook) SendWebhookProtected(url string, key string) (*http.Response, error) {
 	client := &http.Client{}
 
 	webhookData, err := json.Marshal(wh)
